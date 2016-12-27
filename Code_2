@@ -1,0 +1,56 @@
+Question 1
+
+SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("summarySCC_PM25.rds")
+dataEm <- with(NEI, aggregate(Emissions, by = list(year), sum))
+plot(dataEm, main = "Total PM2.5 Emissions", xlab = "Year", ylab = "PM2.5 Emissions", pch = 20, lty = 4, type="b")
+
+Question 2
+
+SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("summarySCC_PM25.rds")
+
+sub <- subset(NEI, fips == "24510")
+baltimore <- tapply(sub$Emissions, sub$year, sum)
+plot(baltimore, main = "Total PM 2.5 Emissions in Baltimore County", xlab = "Year", ylab = "PM2.5 Emissions", pch = 19, lty = 5, type = "b")
+
+Question 3
+
+SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("summarySCC_PM25.rds")
+
+library(ggplot2)
+sub <- subset(NEI, fips == "24510")
+baltimore <- aggregate(sub[c("Emissions")], list(type = sub$type, year = sub$year), sum)
+qplot(year, Emissions, data = baltimore, color = type, geom= "line")+ ggtitle("Total PM2.5 Emissions in Baltimore County by Source Type") + xlab("Year") + ylab("PM2.5 Emissions")
+
+Question 4
+
+SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("summarySCC_PM25.rds")
+
+SCC.sub <- SCC[grepl("Coal" , SCC$Short.Name), ]
+NEI.sub <- NEI[NEI$SCC %in% SCC.sub$SCC, ]
+plot <- ggplot(NEI.sub, aes(x=factor(year), y=Emissions, fill=type)) + geom_bar(stat= "identity", width = .6) + xlab("year")  + ylab("Coal-Related PM2.5 Emissions")  + ggtitle("Total Coal-Related PM2.5 Emissions")
+print(plot)
+
+Question 5
+
+SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("summarySCC_PM25.rds")
+
+sub <- subset(NEI, fips == "24510" & type=="ON-ROAD")
+baltimore <- aggregate(sub[c("Emissions")], list(type = sub$type, year = sub$year, zip = sub$fips), sum)
+qplot(year, Emissions, data = baltimore, geom="line") + theme_gray() + ggtitle("Motor Vehicle-Related Emissions in Baltimore County") + xlab("Year") + ylab("Emission Levels")
+
+Question 6
+
+SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("summarySCC_PM25.rds")
+
+sub_baltimore <- subset(NEI, fips == "24510" & type=="ON-ROAD")
+sub_la <- subset(NEI, fips == "06037" & type=="ON-ROAD")
+baltimore_data <- aggregate(sub_baltimore[c("Emissions")], list(type = sub_baltimore$type, year = sub_baltimore$year, zip = sub_baltimore$fips), sum)
+la_data <- aggregate(sub_la[c("Emissions")], list(type = sub_la$type, year = sub_la$year, zip = sub_la$fips), sum)
+data_merge <- rbind(baltimore_data, la_data)
+qplot(year, Emissions, data = data_merge, color = zip, geom= "line", ylim = c(-100, 5500)) + ggtitle("Motor Vehicle Emissions in Baltimore (24510). Los Angeles (06037) County") + xlab("Year") + ylab("Emission Levels")  
